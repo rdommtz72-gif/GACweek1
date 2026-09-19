@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descriptive Text Game: Jogja Culinary Edition</title>
+    <style>
+        :root {
+            --bg-color: #FAF8F5;
+            --card-bg: #FFFFFF;
+            --text-main: #2C2523;
+            --text-muted: #6E635F;
+            --accent: #C85A32; /* Warm Terracotta */
+            --accent-hover: #A84622;
+            --accent-light: #F9EBE6;
+            --border-color: #E6DDD5;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 680px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            min-height: 520px;
+        }
+
+        /* Header & Progress Bar */
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .level-badge {
+            background-color: var(--accent-light);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .score-badge {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3 {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        h1 { font-size: 1.6rem; text-align: center; }
+        h2 { font-size: 1.25rem; }
+        
+        .instruction {
+            font-size: 1rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .sub-instruction {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        /* Food Tag / Badge */
+        .food-tag {
+            display: inline-block;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--accent);
+            color: #FFFFFF;
+            border: none;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            text-align: center;
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.99);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--bg-color);
+            border-color: var(--text-muted);
+        }
+
+        /* Question Options Layout */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background-color: #FFFFFF;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-btn:hover {
+            border-color: var(--accent);
+            background-color: var(--accent-light);
+        }
+
+        .option-btn.selected {
+            border-color: var(--accent);
+            background-color: var(--accent-light);
+            font-weight: 600;
+        }
+
+        /* Sentence Order Drag/Reorder Controls */
+        .order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .order-item {
+            background-color: #FFFFFF;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .order-item-num {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--accent);
+            font-weight: 700;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .order-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-left: auto;
+        }
+
+        .btn-mini {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 28px;
+            height: 24px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-mini:hover {
+            background-color: var(--border-color);
+        }
+
+        /* Passage Card for Context */
+        .passage-card {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .blank-space {
+            display: inline-block;
+            border-bottom: 2px solid var(--accent);
+            padding: 0 10px;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .feedback-box {
+            display: none;
+            padding: 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .feedback-box.correct {
+            display: flex;
+            background-color: var(--success-bg);
+            border: 1px solid #A5D6A7;
+            color: var(--success);
+        }
+
+        .feedback-box.incorrect {
+            display: flex;
+            background-color: var(--error-bg);
+            border: 1px solid #EF9A9A;
+            color: var(--error);
+        }
+
+        .feedback-title {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feedback-desc {
+            color: var(--text-main);
+            font-size: 0.85rem;
+        }
+
+        /* Start & Result Screens */
+        .welcome-card, .result-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 0;
+        }
+
+        .jogja-illustration {
+            width: 80px;
+            height: 80px;
+            background-color: var(--accent-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        .info-list {
+            text-align: left;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .score-display {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        /* Responsive Tweaks */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 20px 16px;
+            }
+            h1 { font-size: 1.35rem; }
+            h2 { font-size: 1.1rem; }
+            .option-btn { font-size: 0.88rem; padding: 12px 14px; }
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: -8px;
+        }
+
+        .lang-toggle {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .lang-btn {
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn.active {
+            background-color: var(--accent);
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="top-bar">
+            <div class="lang-toggle" id="langToggle">
+                <button class="lang-btn active" id="btnLangEN" onclick="switchLanguage('EN')">EN</button>
+                <button class="lang-btn" id="btnLangID" onclick="switchLanguage('ID')">ID</button>
+            </div>
+        </div>
+
+        <!-- Header (Progress & Stats) -->
+        <div class="header" id="gameHeader" style="display: none;">
+            <div class="header-top">
+                <span class="level-badge" id="levelBadge">Level 1</span>
+                <span class="score-badge"><span id="scoreLabelText">Score</span>: <strong id="scoreText">0</strong></span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="screen active" id="startScreen">
+            <div class="welcome-card">
+                <div class="jogja-illustration">🍲</div>
+                <h1 id="startTitle">Descriptive Text:<br>My Favorite Food</h1>
+                <p id="startSubtitle" style="color: var(--text-muted); font-size: 0.95rem;">
+                    Eksplorasi Kuliner Khas Jogja & Belajar Bahasa Inggris!
+                </p>
+
+                <div class="info-list">
+                    <div class="info-item">
+                        <span>🎯</span>
+                        <div>
+                            <strong id="infoGoalTitle">Tujuan Belajar:</strong>
+                            <p class="sub-instruction" id="infoGoalDesc">Struktur Descriptive Text, Adjectives, & Simple Present Tense.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span>🎮</span>
+                        <div>
+                            <strong id="infoLevelsTitle">4 Level Tantangan:</strong>
+                            <p class="sub-instruction" id="infoLevelsDesc">Word Match, Sentence Order, Fill in Blank, Build Description.</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span>💡</span>
+                        <div>
+                            <strong id="infoRetryTitle">Fitur Retry:</strong>
+                            <p class="sub-instruction" id="infoRetryDesc">Jawaban salah punya 1x kesempatan mencoba lagi.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" id="startBtn">
+                    Mulai Permainan / Start Game
+                </button>
+            </div>
+        </div>
+
+        <div class="screen" id="gameScreen">
+            <div>
+                <div class="food-tag" id="foodTag">Gudeg Jogja</div>
+                <div class="instruction" id="questionInstruction">Question title here</div>
+                <div class="sub-instruction" id="questionSubInstruction">Petunjuk terjemahan di sini</div>
+            </div>
+
+            <!-- Dynamic Question Content Area -->
+            <div id="questionContainer">
+                <!-- Content injected via JS -->
+            </div>
+
+            <!-- Feedback Area -->
+            <div class="feedback-box" id="feedbackBox">
+                <div class="feedback-title" id="feedbackTitle"></div>
+                <div class="feedback-desc" id="feedbackDesc"></div>
+            </div>
+
+            <!-- Action Controls -->
+            <div style="margin-top: auto; padding-top: 10px;">
+                <button class="btn" id="submitBtn">Check Answer</button>
+                <button class="btn" id="nextBtn" style="display: none;">Next Question ➔</button>
+            </div>
+        </div>
+
+        <div class="screen" id="resultScreen">
+            <div class="result-card">
+                <div class="jogja-illustration" id="resultEmoji">🏆</div>
+                <h2 id="resultTitle">Game Completed!</h2>
+                <p id="resultSubtitle" style="color: var(--text-muted); font-size: 0.9rem;">
+                    Hasil Akhir Pembelajaran Kamu / Final Score
+                </p>
+
+                <div class="score-display" id="finalScore">0</div>
+                <p id="scoreMessage" style="font-weight: 600; color: var(--text-main); max-width: 80%;">
+                    Great job!
+                </p>
+
+                <div class="info-list" style="margin-top: 10px;">
+                    <div class="info-item">
+                        <span>📌</span>
+                        <div>
+                            <strong id="summaryNoteTitle">Catatan Ringkas Materi:</strong>
+                            <p class="sub-instruction" id="summaryNoteDesc">
+                                • <strong>Identification:</strong> Mengenalkan makanan (misal: "Gudeg is a traditional dish...").<br>
+                                • <strong>Description:</strong> Menjelaskan rasa, warna, bahan, & tekstur (misal: "It tastes sweet and savory.").<br>
+                                • <strong>Language Features:</strong> Simple Present Tense (is/are, has/have, tastes).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" id="restartBtn">
+                    Main Lagi / Play Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Game Logic -->
+    <script>
+        const UI_TEXT = {
+            EN: {
+                startTitle: "Descriptive Text:<br>My Favorite Food",
+                startSubtitle: "Explore Jogja Culinary & Learn English!",
+                infoGoalTitle: "Learning Goal:",
+                infoGoalDesc: "Descriptive Text Structure, Adjectives, & Simple Present Tense.",
+                infoLevelsTitle: "4 Challenge Levels:",
+                infoLevelsDesc: "Word Match, Sentence Order, Fill in the Blank, Build a Description.",
+                infoRetryTitle: "Retry Feature:",
+                infoRetryDesc: "Incorrect answers get 1 second-chance retry.",
+                startBtn: "Start Game",
+                scoreLabel: "Score",
+                btnCheck: "Check Answer",
+                btnTryAgain: "Try Again",
+                btnNext: "Next Question ➔",
+                resultTitle: "Game Completed!",
+                resultSubtitle: "Your Final Learning Results",
+                summaryTitle: "Quick Material Summary:",
+                summaryDesc: "• <strong>Identification:</strong> Introduces the food (e.g., 'Gudeg is a traditional dish...').<br>• <strong>Description:</strong> Details flavor, color, ingredients & texture (e.g., 'It tastes sweet and savory.').<br>• <strong>Language Features:</strong> Simple Present Tense (is/are, has/have, tastes).",
+                restartBtn: "Play Again",
+                selectOptionAlert: "Please select an answer first!",
+                selectOptionAlertSub: "Choose one option before checking.",
+                correctTitle: "Correct!",
+                tryAgainTitle: "Not Quite Right!",
+                tryAgainSub: "Re-check your selection or sentence order carefully.",
+                incorrectTitle: "Incorrect!",
+                correctAnswerIs: "Correct answer:",
+                msgExcellent: "Outstanding! You have mastered Descriptive Text and Jogja Culinary!",
+                msgGood: "Great Job! Your understanding of Descriptive Text is solid.",
+                msgKeepTrying: "Keep Going! Play again to strengthen your adjectives and text structure."
+            },
+            ID: {
+                startTitle: "Descriptive Text:<br>Makanan Favoritku",
+                startSubtitle: "Eksplorasi Kuliner Khas Jogja & Belajar Bahasa Inggris!",
+                infoGoalTitle: "Tujuan Belajar:",
+                infoGoalDesc: "Struktur Descriptive Text, Kata Sifat, & Simple Present Tense.",
+                infoLevelsTitle: "4 Level Tantangan:",
+                infoLevelsDesc: "Word Match, Sentence Order, Fill in Blank, Build Description.",
+                infoRetryTitle: "Fitur Retry:",
+                infoRetryDesc: "Jawaban salah punya 1x kesempatan mencoba lagi.",
+         
